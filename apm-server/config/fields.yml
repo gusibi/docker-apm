@@ -1,0 +1,580 @@
+- key: beat
+  title: Beat
+  description: >
+    Contains common beat fields available in all event types.
+  fields:
+
+    - name: beat.name
+      description: >
+        The name of the Beat sending the log messages. If the Beat name is
+        set in the configuration file, then that value is used. If it is not
+        set, the hostname is used. To set the Beat name, use the `name`
+        option in the configuration file.
+    - name: beat.hostname
+      description: >
+        The hostname as returned by the operating system on which the Beat is
+        running.
+    - name: beat.timezone
+      description: >
+        The timezone as returned by the operating system on which the Beat is
+        running.
+    - name: beat.version
+      description: >
+        The version of the beat that generated this event.
+
+    - name: "@timestamp"
+      type: date
+      required: true
+      format: date
+      example: August 26th 2016, 12:35:53.332
+      description: >
+        The timestamp when the event log record was generated.
+
+    - name: tags
+      description: >
+        Arbitrary tags that can be set per Beat and per transaction
+        type.
+
+    - name: fields
+      type: object
+      object_type: keyword
+      description: >
+        Contains user configurable fields.
+
+    - name: error
+      type: group
+      description: >
+        Error fields containing additional info in case of errors.
+      fields:
+        - name: message
+          type: text
+          description: >
+            Error message.
+        - name: code
+          type: long
+          description: >
+            Error code.
+        - name: type
+          type: keyword
+          description: >
+            Error type.
+- key: cloud
+  title: Cloud provider metadata
+  description: >
+    Metadata from cloud providers added by the add_cloud_metadata processor.
+  fields:
+
+    - name: meta.cloud.provider
+      example: ec2
+      description: >
+        Name of the cloud provider. Possible values are ec2, gce, or digitalocean.
+
+    - name: meta.cloud.instance_id
+      description: >
+        Instance ID of the host machine.
+
+    - name: meta.cloud.instance_name
+      description: >
+        Instance name of the host machine.
+
+    - name: meta.cloud.machine_type
+      example: t2.medium
+      description: >
+        Machine type of the host machine.
+
+    - name: meta.cloud.availability_zone
+      example: us-east-1c
+      description: >
+        Availability zone in which this host is running.
+
+    - name: meta.cloud.project_id
+      example: project-x
+      description: >
+        Name of the project in Google Cloud.
+
+    - name: meta.cloud.region
+      description: >
+        Region in which this host is running.
+- key: docker
+  title: Docker
+  description: >
+    beta[]
+
+    Docker stats collected from Docker.
+  short_config: false
+  anchor: docker-processor
+  fields:
+    - name: docker
+      type: group
+      fields:
+        - name: container.id
+          type: keyword
+          description: >
+            Unique container id.
+        - name: container.image
+          type: keyword
+          description: >
+            Name of the image the container was built on.
+        - name: container.name
+          type: keyword
+          description: >
+            Container name.
+        - name: container.labels
+          type: object
+          object_type: keyword
+          description: >
+            Image labels.
+- key: kubernetes
+  title: Kubernetes
+  description: >
+    beta[]
+
+    Kubernetes metadata added by the kubernetes processor
+  short_config: false
+  anchor: kubernetes-processor
+  fields:
+    - name: kubernetes
+      type: group
+      fields:
+        - name: pod.name
+          type: keyword
+          description: >
+            Kubernetes pod name
+
+        - name: namespace
+          type: keyword
+          description: >
+            Kubernetes namespace
+
+        - name: labels
+          type: object
+          description: >
+            Kubernetes labels map
+
+        - name: annotations
+          type: object
+          description: >
+            Kubernetes annotations map
+
+        - name: container.name
+          type: keyword
+          description: >
+            Kubernetes container name
+
+        - name: container.image
+          type: keyword
+          description: >
+            Kubernetes container image
+- key: apm
+  title: General APM fields
+  description:
+  fields:
+    - name: processor.name
+      type: keyword
+      description: Processor name.
+
+    - name: processor.event
+      type: keyword
+      description: Processor event.
+
+    - name: context
+      type: group
+      description: >
+        General context fields.
+      dynamic: false
+      fields:
+
+        - name: tags
+          type: object
+          object_type: keyword
+          dynamic: true
+          description: >
+            Flat mapping of user-defined tags.
+
+        - name: user
+          type: group
+          fields:
+
+          - name: username
+            type: keyword
+            description: >
+              The username of the user who experienced this event.
+
+          - name: id
+            type: keyword
+            description: >
+              Identifier of the user who experienced this event.
+
+          - name: email
+            type: keyword
+            description: >
+              Email of the user who experienced this event.
+
+        - name: request
+          type: group
+          fields:
+
+          - name: url
+            type: group
+            description: >
+              The http URL of the request leading to this event.
+            fields:
+
+              - name: raw
+                type: keyword
+                description: >
+                  The raw, unparsed URL of the request, e.g https://example.com:443/search?q=elasticsearch#top.
+
+              - name: protocol
+                type: keyword
+                description: >
+                  The protocol of the request, e.g. "https:".
+
+              - name: hostname
+                type: keyword
+                description: >
+                  The hostname of the request, e.g. "example.com".
+
+              - name: port
+                type: keyword
+                description: >
+                  The port of the request, e.g. 443.
+
+              - name: pathname
+                type: keyword
+                description: >
+                  The path of the request, e.g. "/search".
+
+              - name: search
+                type: keyword
+                description: >
+                  The search describes the query string of the request, e.g. "q=elasticsearch".
+
+              - name: hash
+                type: keyword
+                description: >
+                  The hash of the request URL, e.g. "top".
+
+          - name: http_version
+            type: keyword
+            description: >
+              The http version of the request leading to this event.
+
+          - name: method
+            type: keyword
+            description: >
+              The http method of the request leading to this event.
+
+        - name: response
+          type: group
+          fields:
+
+          - name: status_code
+            type: long
+            description: >
+              Http response status code.
+
+          - name: finished
+            type: boolean
+
+        - name: system
+          type: group
+          description: >
+            Optional system fields.
+          fields:
+
+            - name: hostname
+              type: keyword
+              description: >
+                The host that records the event.
+
+            - name: architecture
+              type: keyword
+              description: >
+                The architecture of the host that records the event.
+
+            - name: platform
+              type: keyword
+              description: >
+                The platform of the host that records the event.
+
+        - name: app
+          type: group
+          description: >
+            App fields.
+          fields:
+
+            - name: name
+              type: keyword
+              description: >
+                Unique App name.
+
+            - name: version
+              type: keyword
+              description: >
+                App version.
+
+            - name: git_ref
+              type: keyword
+              description: >
+                App git reference.
+
+            - name: pid
+              type: long
+              description: >
+                Numeric process ID of the app process.
+
+            - name: process_title
+              type: keyword
+              description: >
+                App process_title.
+
+            - name: language
+              type: group
+              fields:
+
+              - name: name
+                type: keyword
+                description: >
+                  Language name.
+
+              - name: version
+                type: keyword
+                description: >
+                  Language version.
+
+            - name: runtime
+              type: group
+              fields:
+
+              - name: name
+                type: keyword
+                description: >
+                  Runtime name.
+
+              - name: version
+                type: keyword
+                description: >
+                  Runtime version.
+
+            - name: framework
+              type: group
+              fields:
+
+              - name: name
+                type: keyword
+                description: >
+                  Framework name.
+
+              - name: version
+                type: keyword
+                description: >
+                  Framework version.
+
+            - name: agent
+              type: group
+              fields:
+
+              - name: name
+                type: keyword
+                description: >
+                  Agent name.
+
+              - name: version
+                type: keyword
+                description: >
+                  Agent version.
+
+        - name: db
+          type: group
+          enabled: false
+          description: >
+              An object containing contextual data for database traces
+          fields:
+            - name: instance
+              type: text
+              description: >
+                  Database instance name
+
+            - name: statement
+              type: text
+              description: >
+                  A database statement (e.g. query) for the given database type
+
+            - name: type
+              type: text
+              description: >
+                  Database type. For any SQL database, "sql". For others, the lower-case database category, e.g. "cassandra", "hbase", or "redis"
+
+            - name: user
+              type: text
+              description: >
+                  Username for accessing database
+- key: apm-error
+  title: APM Error
+  description: Error-specific data for APM
+  fields:
+    - name: error
+      type: group
+      dynamic: false
+      fields:
+
+        - name: id
+          type: keyword
+          description: >
+            A UUID4 error ID.
+
+        - name: culprit
+          type: text
+          description: Function call which was the primary perpetrator of this event.
+
+        - name: grouping_key
+          type: keyword
+          description: >
+            GroupingKey of the logged error for use in grouping.
+
+        - name: exception
+          type: group
+          description: >
+            Information about the originally thrown error.
+          fields:
+
+            - name: code
+              type: keyword
+              description: The error code set when the error happened, e.g. database error code.
+
+            - name: message
+              type: text
+              description: The original error message.
+
+            - name: module
+              type: keyword
+              description: The module namespace of the original error.
+
+            - name: type
+              type: keyword
+
+            - name: uncaught
+              type: boolean
+              description: Indicator whether the error was caught somewhere in the code or not.
+
+
+        - name: log
+          type: group
+          description: >
+            Additional information added by logging the error.
+          fields:
+
+            - name: level
+              type: keyword
+              description: The severity of the record.
+
+            - name: logger_name
+              type: keyword
+              description: The name of the used logger instance.
+
+            - name: message
+              type: text
+              description: The additionally logged error message.
+
+            - name: param_message
+              type: keyword
+              description: Equal to message, but with placeholders replaced.
+
+- key: apm-transaction
+  title: APM Transaction
+  description: Transaction-specific data for APM
+  fields:
+    - name: transaction
+      type: group
+      dynamic: false
+      fields:
+        - name: id
+          type: keyword
+          description: >
+            A UUID4 transaction ID.
+
+        - name: name
+          type: text
+          multi_fields:
+            - name: keyword
+              type: keyword
+          description: >
+            Name of the transaction. This is usually a generic path to the controller/endpoint that handled the
+            transaction.
+
+            TODO: investigate use of "path_hierarchy" tokenizer
+
+        - name: type
+          type: keyword
+          description: >
+            The transaction type, e.g. "request", or "job".
+
+        - name: duration
+          type: group
+          description:
+          fields:
+
+            - name: us
+              type: long
+              description: >
+                Total duration of this transaction, in microseconds.
+
+        - name: result
+          type: keyword
+          description: >
+            The result of the transaction. HTTP status code for HTTP-related transactions.
+
+
+- key: apm-trace
+  title: APM Trance
+  description: Trace-specific data for APM.
+  fields:
+    - name: trace
+      type: group
+      dynamic: false
+      fields:
+
+        - name: id
+          type: long
+          description: >
+            A locally unique ID of the trace.
+
+        - name: transaction_id
+          type: keyword
+          description: >
+            Reference to the transaction this trace is part of.
+
+        - name: name
+          type: keyword
+          description: >
+            Generic name of the trace.
+
+        - name: type
+          type: keyword
+          description: >
+            Type of the trace. This should be a dotted format, e.g. db.postgresql.query, cache.redis, or ext.http.get.
+
+        - name: start
+          type: group
+          description:
+          fields:
+            - name: us
+              type: long
+              description: >
+                Start time of the trace in microseconds, relative to the start time of the transaction.
+
+        - name: duration
+          type: group
+          description:
+          fields:
+
+            - name: us
+              type: long
+              description: >
+                Duration of the trace, in microseconds.
+
+        - name: parent
+          type: long
+          description: >
+             The parent trace id for recreating the full ancestor path.
