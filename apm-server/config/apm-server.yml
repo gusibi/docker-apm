@@ -13,7 +13,7 @@ apm-server:
 
   # Authorization token to be checked. If a token is set here the agents must
   # send their token in the following format: Authorization: Bearer <secret-token>
-  #secret_token:
+  secret_token: "1234567"
 
 #================================ General =====================================
 
@@ -80,8 +80,8 @@ output.elasticsearch:
 
   # Optional protocol and basic auth credentials.
   #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
+  username: "elastic"
+  password: "changeme"
 
 #----------------------------- Logstash output --------------------------------
 #output.logstash:
