@@ -1,0 +1,44 @@
+version: '2.1'
+services:
+    beat:
+        image: apm-server
+        ports:
+            - "8200:8200"
+        volumes:
+            - ./apm-server/config/apm-server.yml:/go/src/github.com/elastic/apm-server/apm-server.yml
+            - ./apm-server/config/fields.yml:/go/src/github.com/elastic/apm-server/fields.yml
+        networks:
+            - apm
+        depends_on:
+          - elasticsearch
+          - kibana
+
+    # This is a proxy used to block beats until all services are healthy.
+    # See: https://github.com/docker/compose/issues/4369
+    # proxy_dep:
+    #     image: busybox
+    #     depends_on:
+    #         - elasticsearch
+    elasticsearch:
+        image: elasticsearch:6.0
+        # volumes:
+        #     - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        networks:
+            - apm
+    kibana:
+        image: kibana:7.0
+        # volumes:
+        #     - ./kibana/config/:/usr/share/kibana/config
+        ports:
+          - "5601:5601"
+        networks:
+            - apm
+        depends_on:
+          - elasticsearch
+
+networks:
+    apm:
+        driver: bridge

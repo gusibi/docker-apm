@@ -1,44 +1,49 @@
-version: '2.1'
+version: '3'
 services:
     beat:
-        image: apm-server
+        image: docker.elastic.co/apm/apm-server:6.2.4
         ports:
             - "8200:8200"
+            - "8201:8200"
+        environment:
+            - apm-server.host=0.0.0.0
         volumes:
-            - ./apm-server/config/apm-server.yml:/go/src/github.com/elastic/apm-server/apm-server.yml
-            - ./apm-server/config/fields.yml:/go/src/github.com/elastic/apm-server/fields.yml
+            - ./apm-server.yml:/usr/share/apm-server/apm-server.yml
         networks:
             - apm
         depends_on:
           - elasticsearch
           - kibana
-
-    # This is a proxy used to block beats until all services are healthy.
-    # See: https://github.com/docker/compose/issues/4369
-    # proxy_dep:
-    #     image: busybox
-    #     depends_on:
-    #         - elasticsearch
     elasticsearch:
-        image: elasticsearch:6.0
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+        # network_mode: "service:elasticsearch"
         # volumes:
         #     - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-        ports:
-            - "9200:9200"
-            - "9300:9300"
+        environment:
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - discovery.type=single-node
+            - http.host=0.0.0.0
+            - transport.host=127.0.0.1
+            - ELASTIC_PASSWORD=password
         networks:
             - apm
+        ports:
+            - "9200:9200"
     kibana:
-        image: kibana:7.0
+        image: docker.elastic.co/kibana/kibana:6.2.4
         # volumes:
-        #     - ./kibana/config/:/usr/share/kibana/config
+        #     - ./kibana.yml:/usr/share/kibana/config/kibana.yml
         ports:
           - "5601:5601"
         networks:
             - apm
+        environment:
+            - ELASTICSEARCH_URL=http://elasticsearch:9200
+            - ELASTICSEARCH_USERNAME=kibana
+            - ELASTICSEARCH_PASSWORD=password
         depends_on:
           - elasticsearch
 
 networks:
-    apm:
-        driver: bridge
+  apm:
+    driver: bridge
